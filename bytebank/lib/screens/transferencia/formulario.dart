@@ -1,6 +1,9 @@
 import 'package:bytebank/components/editor.dart';
+import 'package:bytebank/models/saldo.dart';
 import 'package:bytebank/models/transferencia.dart';
+import 'package:bytebank/models/transferencias.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 const _TITULO_APP_BAR = "Criando transferência";
 
@@ -11,12 +14,7 @@ const _rotuloCampoNumeroConta = 'Número da conta';
 const _dicaCampoNumeroConta = '0000';
 const _textoBotaoConfirmar = 'Confirmar';
 
-class FormularioTransferencia extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => FormularioTransferenciaState();
-}
-
-class FormularioTransferenciaState extends State<FormularioTransferencia> {
+class FormularioTransferencia extends StatelessWidget {
   final TextEditingController _controladorCampoNumeroConta =
       TextEditingController();
   final TextEditingController _controladorCampoValor = TextEditingController();
@@ -24,10 +22,24 @@ class FormularioTransferenciaState extends State<FormularioTransferencia> {
   void _criaTransferencia(BuildContext context) {
     final int numeroConta = int.tryParse(_controladorCampoNumeroConta.text);
     final double valor = double.tryParse(_controladorCampoValor.text);
-    if (numeroConta != null && valor != null) {
-      final transferenciaCriada = Transferencia(valor, numeroConta);
-      Navigator.pop<Transferencia>(context, transferenciaCriada);
+    final transferenciaValida = _saldoSuficiente(context, valor) &&
+        _validaTransferencia(numeroConta, valor);
+
+    if (transferenciaValida) {
+      _atualizaEstado(context, Transferencia(valor, numeroConta));
+      Navigator.pop(context);
     }
+  }
+
+  bool _validaTransferencia(int numeroConta, double valor) =>
+      numeroConta != null && valor != null;
+
+  bool _saldoSuficiente(BuildContext context, double valor) =>
+      valor <= Provider.of<Saldo>(context, listen: false).saldo;
+
+  void _atualizaEstado(BuildContext context, Transferencia transferencia) {
+    Provider.of<Transferencias>(context, listen: false).adiciona(transferencia);
+    Provider.of<Saldo>(context, listen: false).subtrai(transferencia.valor);
   }
 
   @override
