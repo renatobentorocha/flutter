@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:bytebank_official/models/contact.dart';
 import 'package:flutter/material.dart';
 
@@ -62,7 +60,7 @@ class _ContactFormState extends State<ContactForm> {
                     final int accountNumber =
                         int.tryParse(_accountNumberController.text) ?? 0;
 
-                    final contact = Contact(name, accountNumber);
+                    final contact = Contact(0, name, accountNumber);
 
                     Navigator.pop(context, contact);
                   },
